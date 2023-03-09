@@ -1,87 +1,80 @@
 <template>
-  <v-row justify="center" align="center">
-    <v-col cols="12" sm="8" md="6">
-      <v-card class="logo py-4 d-flex justify-center">
-        <NuxtLogo />
-        <VuetifyLogo />
-      </v-card>
-      <v-card>
-        <v-card-title class="headline">
-          Welcome to the Vuetify + Nuxt.js template
-        </v-card-title>
-        <v-card-text>
-          <p>
-            Vuetify is a progressive Material Design component framework for
-            Vue.js. It was designed to empower developers to create amazing
-            applications.
-          </p>
-          <p>
-            For more information on Vuetify, check out the
-            <a
-              href="https://vuetifyjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              documentation </a
-            >.
-          </p>
-          <p>
-            If you have questions, please join the official
-            <a
-              href="https://chat.vuetifyjs.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="chat"
-            >
-              discord </a
-            >.
-          </p>
-          <p>
-            Find a bug? Report it on the github
-            <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="contribute"
-            >
-              issue board </a
-            >.
-          </p>
-          <p>
-            Thank you for developing with Vuetify and I look forward to bringing
-            more exciting features in the future.
-          </p>
-          <div class="text-xs-right">
-            <em><small>&mdash; John Leider</small></em>
-          </div>
-          <hr class="my-3" />
-          <a
-            href="https://nuxtjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt Documentation
-          </a>
-          <br />
-          <a
-            href="https://github.com/nuxt/nuxt.js"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt GitHub
-          </a>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="primary" nuxt to="/inspire"> Continue </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-  </v-row>
+  <div class="d-flex align-center justify-center" style="height: 100vh">
+    <v-container fluid class="text-center">
+      <v-row justify="center">
+        <v-col cols="12" sm="8" md="6" lg="4">
+          <v-card>
+            <v-card-title class="text-center">Login</v-card-title>
+            <v-card-text>
+              <v-form>
+                <v-text-field
+                  v-model="data.login.email"
+                  label="Email"
+                  outlined
+                ></v-text-field>
+                <v-text-field
+                  v-model="data.login.password"
+                  label="Password"
+                  outlined
+                  type="password"
+                ></v-text-field>
+              </v-form>
+            </v-card-text>
+            <v-card-actions class="d-flex justify-end align-center">
+              <v-btn class="mr-2 mb-2" color="primary" @click="userLogin">Login</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-snackbar
+      :value="requestStatus"
+      timeout="3000"
+      absolute
+      top
+      right
+      :color="requestStatus ? 'success' : 'red'"
+    >
+      {{ response.message }}
+    </v-snackbar>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+// region Imports
+import axios from "axios";
+
+import {LoginRequest} from "~/models/api/request_models/login_request";
+import {LoginResponse} from "~/models/api/response_models/login_response";
+// endregion
 export default {
-  name: 'IndexPage',
+  data() {
+    return {
+      data: new LoginRequest(),
+      requestStatus: false,
+      response: new LoginResponse()
+    }
+  },
+  methods: {
+    /*
+      Sends LoginRequest model to Search and Stay API and receives
+      the LoginResponse data
+    */
+    async userLogin() {
+      const result = await axios.post(
+        "https://sys-dev.searchandstay.com/api/admin/login_json",
+        this.data
+      );
+      this.response = result.data;
+
+      console.log(this.response);
+
+      if (this.response.success) {
+        this.requestStatus = this.response.success;
+        sessionStorage.setItem("accessToken", this.response.data?.result.access_token);
+        await this.$router.push("/home")
+      }
+    }
+  }
 }
 </script>
