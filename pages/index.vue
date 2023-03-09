@@ -55,6 +55,9 @@ export default {
       response: new LoginResponse()
     }
   },
+  mounted() {
+    sessionStorage.clear();
+  },
   methods: {
     /*
       Sends LoginRequest model to Search and Stay API and receives
